@@ -90,7 +90,7 @@ public class CreateTravelPlanActivity extends AppCompatActivity {
                 http = (HttpURLConnection)url.openConnection();
                 http.setRequestMethod("GET");
                 http.connect();
-
+//test
 
 
             } catch (MalformedURLException e) {
