@@ -1,7 +1,7 @@
 package com.example.kosta.travel;
 
 import android.os.AsyncTask;
-import android.provider.DocumentsContract;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,14 +9,18 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -68,41 +72,63 @@ public class CreateTravelPlanActivity extends AppCompatActivity {
                 travelPlan.setStartDate(startDate.getText().toString());
                 travelPlan.setEndDate(endDate.getText().toString());
 
-               // CreateTravelPlanTask
-
+                CreateTravelPlanTask task = new CreateTravelPlanTask();
+                task.execute("http://10.0.2.2:8888/EveryYeoga/travel/mobileCreateTravelPlan.do?" +
+                        "speakingAbility="+travelPlan.getSpeakingAbility()
+                        + "&travelArea="+travelPlan.getTravelArea()
+                        + "&numberOfVisits="+travelPlan.getNumberOfVisits()
+                        + "&theme="+travelPlan.getTheme()
+                        + "&numberOfTraveler="+travelPlan.getNumberOfTraveler()
+                        + "&preferGuide="+travelPlan.getPreferGuide()
+                        + "&selfIntroduction="+travelPlan.getSelfIntroduction()
+                        + "&startDate="+travelPlan.getStartDate()
+                        + "&endDate="+travelPlan.getEndDate()
+                );
 
             }
         });
     }
 
 
-    private class CreateTravelPlanTask extends AsyncTask<String, Void, String>{
+    private class CreateTravelPlanTask extends AsyncTask<String, Object, Boolean> {
 
-        @Override
-        protected String doInBackground(String... strings) {
-
+        protected Boolean doInBackground(String... params) {
             HttpURLConnection http = null;
             InputStream is = null;
             String checkStr = null;
 
             try {
-                URL url = new URL(strings[0]);
-                http = (HttpURLConnection)url.openConnection();
-                http.setRequestMethod("GET");
-                http.connect();
-//test
 
+                URL url = new URL(params[0]);
+
+                DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+
+                Document doc = documentBuilder.parse(new InputSource(url.openStream()));
+                doc.getDocumentElement().normalize();
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-            } catch (ProtocolException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            } catch (SAXException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean check) {
+
+            if(check){
+
+            }else{
+
             }
 
-
-            return null;
         }
     }
+
 }
