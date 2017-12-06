@@ -35,7 +35,7 @@ public class TravelPlanListActivity extends AppCompatActivity {
         ListView list = (ListView)findViewById(R.id.list);
 
         AllTravelPlansLoadingTask task = new AllTravelPlansLoadingTask();
-        task.execute("http://10.0.2.2:8080/EveryYeoga/travel/mobileTravelPlanList.do");
+        task.execute("http://10.0.2.2:8888/EveryYeoga/travel/mobileTravelPlanList.do");
 
         travelPlans = new ArrayList<>();
         adapter = new TravelPlanAdapter(this, travelPlans);
@@ -90,6 +90,5 @@ public class TravelPlanListActivity extends AppCompatActivity {
 
         return nValue.getNodeValue();
     }
-
 
 }

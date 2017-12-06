@@ -1,6 +1,7 @@
 package com.example.kosta.travel;
 
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -21,6 +22,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,9 +31,9 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class MyTravelPlanActivity extends AppCompatActivity {
 
+    private List<TravelPlan> travelPlans;
 
     private TravelPlan travelPlan;
-    private TextView textTravelerId;
     private TextView textTravelArea;
     private TextView textTheme;
     private TextView textPreferGuide;
@@ -40,7 +43,9 @@ public class MyTravelPlanActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.my_travel_plan);
-        textTravelerId = (TextView)findViewById(R.id.travelerId);
+
+        travelPlans = new ArrayList<>();
+
         textTravelArea = (TextView)findViewById(R.id.travelArea);
         textTheme= (TextView)findViewById(R.id.theme);
         textPreferGuide = (TextView)findViewById(R.id.preferGuide);
@@ -52,7 +57,7 @@ public class MyTravelPlanActivity extends AppCompatActivity {
         String id = "1";
 
         MyTravelPlanTask task = new MyTravelPlanTask();
-        task.execute("http://10.0.2.2:8080/EveryYeoga/travel/mobileMyTravelPlan.do?userId"+id.toString());
+        task.execute("http://10.0.2.2:8888/EveryYeoga/travel/mobileMyTravelPlan.do?userId="+id.toString());
 
     }
     private class MyTravelPlanTask extends AsyncTask<String, Void, TravelPlan>{
@@ -65,33 +70,26 @@ public class MyTravelPlanActivity extends AppCompatActivity {
 
             try {
                 URL url = new URL(params[0]);
-                http = (HttpURLConnection)url.openConnection();
-                http.setRequestMethod("GET");
-                http.connect();
-
-                is = http.getInputStream();
-
-                //       URL url = new URL((String)params[0]);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                checkStr = reader.readLine();
 
                 DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 
                 Document doc = documentBuilder.parse(new InputSource(url.openStream()));
                 doc.getDocumentElement().normalize();
+                NodeList nodeList = doc.getElementsByTagName("travelPlan");
 
+                for(int i=0; i<nodeList.getLength(); i++){
+                    TravelPlan travelPlan = new TravelPlan();
 
-                Node node = (Node) doc.getElementsByTagName("travelPlan");
-                Element fElement = (Element)node;
-
-                travelPlan = new TravelPlan();
-
-                travelPlan.setTravelPlanId(getTagValue("travelPlanId", fElement));
-                travelPlan.setTheme(getTagValue("theme", fElement));
-                travelPlan.setTravelArea(getTagValue("travelArea", fElement));
-                travelPlan.setPreferGuide(getTagValue("preferGuide", fElement));
-
+                    Node node = nodeList.item(i);
+                    Element fElement = (Element)node;
+                    travelPlan = new TravelPlan();
+                    travelPlan.setTravelPlanId(getTagValue("travelPlanId", fElement));
+                    travelPlan.setTheme(getTagValue("theme", fElement));
+                    travelPlan.setTravelArea(getTagValue("travelArea", fElement));
+                    travelPlan.setPreferGuide(getTagValue("preferGuide", fElement));
+                    travelPlans.add(travelPlan);
+                }
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -107,16 +105,13 @@ public class MyTravelPlanActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(TravelPlan travelPlan) {
-            textTravelerId.setText(travelPlan.getTravelPlanId());
-            textPreferGuide.setText(travelPlan.getPreferGuide());
-            textTheme.setText(travelPlan.getTheme());
-            textTravelArea.setText(travelPlan.getTravelArea());
+
+            textPreferGuide.setText(travelPlans.get(0).getPreferGuide());
+            textTheme.setText(travelPlans.get(0).getTheme());
+            textTravelArea.setText(travelPlans.get(0).getTravelArea());
 
         }
     }
-
-
-
 
     private static String getTagValue(String tag, Element element){
         NodeList nodeList = element.getElementsByTagName(tag).item(0).getChildNodes();
